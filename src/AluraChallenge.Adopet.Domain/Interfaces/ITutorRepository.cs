@@ -45,5 +45,7 @@
         /// </summary>
         /// <returns><see cref="int"/></returns>
         Task<int> SaveAsync();
+
+        void LogsEntries();
     }
 }

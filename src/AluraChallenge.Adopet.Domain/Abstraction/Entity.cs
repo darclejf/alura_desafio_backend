@@ -12,15 +12,6 @@ namespace AluraChallenge.Adopet.Domain.Abstraction
         public Guid Id { get; protected set; }
         public List<INotification>? DomainEvents { get; protected set; }
 
-        /// <summary>
-        /// Método que gera novo código Id para entidade
-        /// </summary>
-        /// <returns>{Guid}</returns>
-        protected static Guid GenerateNewEntityId()
-        {
-            return Guid.NewGuid();
-        }
-
         public void AddDomainEvent(INotification eventItem)
         {
             DomainEvents ??= new List<INotification>();
@@ -49,23 +40,7 @@ namespace AluraChallenge.Adopet.Domain.Abstraction
 
         public override string? ToString()
         {
-            return base.ToString();
-        }
-
-        public static bool operator ==(Entity a, Entity b)
-        {
-            if (ReferenceEquals(a, null) && ReferenceEquals(b, null))
-                return true;
-
-            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
-                return false;
-
-            return a.Equals(b);
-        }
-
-        public static bool operator !=(Entity a, Entity b)
-        {
-            return !(a == b);
+            return base.ToString() + " " + Id;
         }
     }
 }

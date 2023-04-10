@@ -31,5 +31,7 @@
         /// </summary>
         /// <returns><see cref="int"/></returns>
         Task<int> SaveAsync();
+
+        Task<City?> GetByNameAsync(string name, string uf);
     }
 }

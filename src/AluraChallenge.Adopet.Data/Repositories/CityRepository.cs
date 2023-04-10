@@ -10,22 +10,18 @@ namespace AluraChallenge.Adopet.Data.Repositories
         public CityRepository(AdopetDbContext context, IMediator mediator) : base(context,mediator)
         { }
  
-        public async Task<City> AddAsync(City entity)
-        {
-            await _context.AddAsync(entity);
-            return entity;
-        }
-
-        public async Task DeleteAsync(City entity)
-        {
-            _context.Remove(entity);
-        }
-
         public async Task<City?> GetByIdAsync(Guid id)
         {
             return await _context
                 .Cities
                 .FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<City?> GetByNameAsync(string name, string uf)
+        {
+            return await _context
+                .Cities
+                .FirstOrDefaultAsync(x => x.Name.Equals(name) && x.UF.Equals(uf));
         }
     }
 }

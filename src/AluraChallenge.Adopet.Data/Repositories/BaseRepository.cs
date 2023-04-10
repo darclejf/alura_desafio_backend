@@ -1,10 +1,6 @@
 ﻿using AluraChallenge.Adopet.Domain.Abstraction;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace AluraChallenge.Adopet.Data.Repositories
 {
@@ -23,6 +19,14 @@ namespace AluraChallenge.Adopet.Data.Repositories
         public void Dispose()
         {
             _context.Dispose();
+        }
+
+        public void LogsEntries()
+        {
+            foreach (var e in _context.ChangeTracker.Entries())
+            {
+                Console.WriteLine(e.Entity.ToString() + " - " + e.State);
+            }
         }
 
         /// <summary>
@@ -44,6 +48,33 @@ namespace AluraChallenge.Adopet.Data.Repositories
             await DispatchDomainEventsAsync();
 
             return await _context.SaveChangesAsync();
+
+            //foreach (var entry in _context.ChangeTracker.Entries().Where(entry => entry.State == EntityState.Added || entry.State == EntityState.Modified))
+            //{
+            //    // Gets all properties from the changed entity by reflection.
+            //    foreach (var entityProperty in entry.Entity.GetType().GetProperties())
+            //    {
+            //        var propertyName = entityProperty.Name;
+            //        var currentValue = entry.Property(propertyName).CurrentValue;
+            //        var originalValue = entry.Property(propertyName).OriginalValue;
+            //    }
+            //}
+        }
+
+        public async virtual Task<T> AddAsync(T entity)
+        {
+            await _context.AddAsync(entity);
+            return entity;
+        }
+
+        public virtual async Task DeleteAsync(T entity)
+        {
+            await Task.Run(() => _context.Remove(entity));
+        }
+
+        public async Task UpdateAsync(T entity)
+        {
+            await Task.Run(() => _context.Update(entity));
         }
 
         protected async Task DispatchDomainEventsAsync()

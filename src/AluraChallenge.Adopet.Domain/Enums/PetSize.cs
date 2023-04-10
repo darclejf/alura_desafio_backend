@@ -1,4 +1,4 @@
-﻿namespace AluraChallenge.Adopet.Domain
+﻿namespace AluraChallenge.Adopet.Domain.Enums
 {
     public enum PetSize
     {
