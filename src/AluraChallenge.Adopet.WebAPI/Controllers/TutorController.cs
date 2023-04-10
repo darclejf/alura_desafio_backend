@@ -1,7 +1,6 @@
 using AluraChallenge.Adopet.Application.Commands;
-using AluraChallenge.Adopet.Application.Responses;
+using AluraChallenge.Adopet.Application.Request;
 using AluraChallenge.Adopet.ApplicationQuery;
-using AluraChallenge.Adopet.ApplicationQuery.ViewModels;
 using AluraChallenge.Adopet.Core.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -9,18 +8,16 @@ using Microsoft.AspNetCore.Mvc;
 namespace AluraChallenge.Adopet.WebAPI.Controllers
 {
     [ApiController]
-    [Route("tutores")]
+    [Route("api/tutores")]
     public class TutorController : ControllerBase
     {
-        private readonly ILogger<TutorController> _logger;
         private readonly IMediator _mediator;
-        private readonly TutorQueryServices _tutorQuery;
+        private readonly TutorQueryServices _queryService;
 
-        public TutorController(ILogger<TutorController> logger, IMediator mediator, TutorQueryServices tutorQuery)
+        public TutorController(IMediator mediator, TutorQueryServices queryService)
         {
-            _logger = logger;
             _mediator = mediator;
-            _tutorQuery = tutorQuery;
+            _queryService = queryService;
         }
 
         /// <summary>
@@ -31,61 +28,121 @@ namespace AluraChallenge.Adopet.WebAPI.Controllers
         [HttpPost]
         [Produces("application/json")]
         [Consumes("application/json")]
-        [ProducesResponseType(typeof(CreateTutorResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(TutorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Post([FromBody] CreateTutorCommandRequest request)
+        public async Task<IActionResult> Post([FromBody] CreatePersonRequest request)
         {
-            return Ok(await _mediator.Send(request));
+            return Ok(await _mediator.Send(new CreateTutorCommandRequest(request)));
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         [Produces("application/json")]
         [Consumes("application/json")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Delete([FromQuery] DeleteTutorCommandRequest request)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            return Ok(await _mediator.Send(request));
+            return Ok(await _mediator.Send(new DeleteTutorCommandRequest(id)));
         }
 
         [HttpGet]
         [Produces("application/json")]
         [Consumes("application/json")]
-        [ProducesResponseType(typeof(PaginationListViewModel<TutorListItemViewModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginationListResponse<PersonListItemResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get(int? page, int? total)
         {
-            return Ok(await _tutorQuery.GetAsync(page, total));
+            return Ok(await _queryService.GetAsync(page, total));
         }
 
         [HttpGet("{id}")]
         [Produces("application/json")]
         [Consumes("application/json")]
-        [ProducesResponseType(typeof(TutorViewModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(TutorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get(Guid id)
         {
-            return Ok(await _tutorQuery.GetAsync(id));
+            return Ok(await _queryService.GetAsync(id));
         }
 
-        [HttpPatch]
+        [HttpPut("{id}")]
         [Produces("application/json")]
         [Consumes("application/json")]
-        [ProducesResponseType(typeof(TutorViewModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(TutorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Patch([FromBody] ChangeProfilePropertiesCommandRequest request)
+        public async Task<IActionResult> Put(Guid id, [FromBody] UpdatePersonRequest request)
         {
-            return Ok(await _mediator.Send(request));
+            return Ok(await _mediator.Send(new ChangeTutorPropertiesCommandRequest(id, request)));
+        }
+
+        [HttpPatch("{id}/sobre")]
+        [Produces("application/json")]
+        [Consumes("application/json")]
+        [ProducesResponseType(typeof(TutorResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> PatchAbout(Guid id, [FromBody] AboutRequest request)
+        {
+            return Ok(await _mediator.Send(new ChangeTutorAboutCommandRequest(id, request)));
+        }
+
+        [HttpPatch("{id}/endereco")]
+        [Produces("application/json")]
+        [Consumes("application/json")]
+        [ProducesResponseType(typeof(TutorResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> PatchAddress(Guid id, [FromBody] AddressRequest request)
+        {
+            return Ok(await _mediator.Send(new ChangeTutorAddressCommandRequest(id, request)));
+        }
+
+        [HttpPatch("{id}/nome")]
+        [Produces("application/json")]
+        [Consumes("application/json")]
+        [ProducesResponseType(typeof(TutorResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> PatchName(Guid id, [FromBody] NameRequest request)
+        {
+            return Ok(await _mediator.Send(new ChangeTutorNameCommandRequest(id, request)));
+        }
+
+        [HttpPatch("{id}/telefone")]
+        [Produces("application/json")]
+        [Consumes("application/json")]
+        [ProducesResponseType(typeof(TutorResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> PatchPhone(Guid id, [FromBody] PhoneRequest request)
+        {
+            return Ok(await _mediator.Send(new ChangeTutorPhoneCommandRequest(id, request)));
+        }
+
+        [HttpPatch("{id}/imagem")]
+        [Produces("application/json")]
+        [Consumes("application/json")]
+        [ProducesResponseType(typeof(TutorResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> PatchUrlImage(Guid id, [FromBody] UrlImageRequest request)
+        { 
+            return Ok(await _mediator.Send(new ChangeTutorUrlImageCommandRequest(id, request)));
         }
     }
 }

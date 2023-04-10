@@ -1,25 +1,29 @@
 ﻿using AluraChallenge.Adopet.Core.Exceptions;
-using AluraChallenge.Adopet.Core.ValueObjects;
 using AluraChallenge.Adopet.Domain.Abstraction;
 using AluraChallenge.Adopet.Domain.DomainEvents;
+using AluraChallenge.Adopet.Domain.Enums;
 
 namespace AluraChallenge.Adopet.Domain
 {
     /// <summary>
     /// Classe que representa a entidade de domínio Tutor <see cref="Tutor" />.
     /// </summary>
-    public sealed class Tutor : Entity
+    public sealed class Tutor : Person
     {
-        public string Name { get; private set; }
-        public Email Email { get; private set; }
-        public string? Phone { get; private set; }
-        public string Password { get; private set; }
-        public string? UrlImage { get; private set; }
-        public ResponsibleType Type { get; private set; }
-        public Guid? CityId { get; private set; }
-        public City? City { get; private set; }
+        public string? About { get; private set; }
 
         private Tutor() { }
+
+        private Tutor(string name,
+                        string email,
+                        string phone,
+                        string password,
+                        string confirmaPassword,
+                        string about = "") : base(name, email, phone, password, confirmaPassword, ProfileRole.Tutor) 
+        {
+            About = about;
+            AddDomainEvent(new CreateEntityDomainEvent<Tutor>(this));
+        }
 
         /// <summary>
         /// Método que cria um objeto do tipo Tutor
@@ -35,86 +39,15 @@ namespace AluraChallenge.Adopet.Domain
                                     string email,
                                     string password,
                                     string confirmPassword,
-                                    string phone = "",
-                                    ResponsibleType type = ResponsibleType.Individual)
+                                    string phone = "")
         {
-            var emailObject = new Email(email);
-
-            var tutor = new Tutor()
-            {
-                Id = Entity.GenerateNewEntityId(),
-                Name = name,
-                Email = emailObject,
-            };
-
-            tutor.ChangeName(name);
-            tutor.ChangePhone(phone);
-            tutor.ChangePassword(password, confirmPassword);
-            tutor.ChangeType(type);
-
-            tutor.AddDomainEvent(new CreateTutorDomainEvent(tutor));
-
+            var tutor = new Tutor(name, email, phone, password, confirmPassword);
             return tutor;
         }
 
-        public void ChangeUrlImage(string urlImage)
+        public void ChangeAbout(string? about)
         {
-            UrlImage = urlImage;
-        }
-        public void ChangeType(ResponsibleType type)
-        {
-            Type = type;
-        }
-
-        public void ChangeCity(City city)
-        {
-            CityId = city.Id;
-            City = city;
-        }
-
-        /// <summary>
-        /// Método para atualizar o nome do Tutor
-        /// </summary>
-        /// <param name="name"></param>
-        /// <exception cref="EmptyNameException"></exception>
-        public void ChangeName(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-                throw new EmptyNameException();
-
-            Name = name;
-        }
-
-        /// <summary>
-        /// Método para atualizar o telefone do Tutor
-        /// </summary>
-        /// <param name="phone"></param>
-        public void ChangePhone(string? phone)
-        {
-            Phone = phone;
-        }
-
-        /// <summary>
-        /// Método para alterar a senha do tutor
-        /// </summary>
-        /// <param name="password"></param>
-        /// <param name="confirmPassword"></param>
-        public void ChangePassword(string password, string confirmPassword)
-        {
-            ValidatePassword(password, confirmPassword);
-            Password = password;
-        }
-
-        private static void ValidatePassword(string password, string confirmPassword)
-        {
-            if (string.IsNullOrEmpty(password))
-                throw new InvalidPasswordException();
-
-            //TODO implementar validacao com regex
-            //A senha deve conter pelo menos uma letra maiúscula, um número e ter entre 6 e 15 caracteres
-
-            if (password != confirmPassword)
-                throw new InvalidConfirmationPasswordException();
+            About = about;
         }
     }
 }

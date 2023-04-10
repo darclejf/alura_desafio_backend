@@ -4,38 +4,41 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AluraChallenge.Adopet.Data.Mappings
 {
-    public class TutorMapping : IEntityTypeConfiguration<Tutor>
+    public class TutorMapping : BaseEntityMapping<Tutor>
     {
-        public void Configure(EntityTypeBuilder<Tutor> builder)
+        public override void ConfigureProperties(EntityTypeBuilder<Tutor> builder)
         {
-            builder.HasKey(t => t.Id);          
-
-            builder.Property(t => t.Name)
+            builder.Property(e => e.Name)
                 .IsRequired()
                 .HasColumnType("nvarchar(250)");
 
             //TODO commo identificar valuobject email como unique constraint no efcore
-            builder.OwnsOne(t => t.Email)
-                .Property(t => t.Address)
+            builder.OwnsOne(e => e.Email)
+                .Property(e => e.Address)
                 .HasColumnName("Email")
                 .HasColumnType("nvarchar(250)")
                 .IsRequired(true);
 
-            builder.Property(t => t.Phone)
+            builder.Property(e => e.Phone)
                 .HasColumnType("nvarchar(250)");
 
-            builder.Property(t => t.Password)
-                .IsRequired()
+            builder.Property(e => e.About)
                 .HasColumnType("nvarchar(MAX)");
 
-            builder.HasOne(t => t.City)
+            builder.HasOne(e => e.User)
                 .WithOne()
-                .HasForeignKey<Tutor>(t => t.CityId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .HasForeignKey<Tutor>(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(e => e.City)
+                .WithOne()
+                .HasForeignKey<Tutor>(e => e.CityId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Property(e => e.UrlImage)
+                .HasColumnType("nvarchar(MAX)");
 
             builder.ToTable("Tutors");
-
-            builder.Ignore(t => t.DomainEvents);
         }
     }
 }

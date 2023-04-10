@@ -11,31 +11,32 @@ namespace AluraChallenge.Adopet.Domain
 
         private City() { }
 
-        protected City(Guid id, string? name, string? uf)
+        protected City(string? name, string? uf)
         {
             if (string.IsNullOrEmpty(name))
                 throw new EmptyNameException();
 
-            if (string.IsNullOrEmpty(uf))
-                throw new NotImplementedException();
+            if (string.IsNullOrEmpty(uf) || uf.Length > 2)
+                throw new EmptyUFException();
 
-            Id = id;
+
             Name = name;
             UF = uf;
 
-            AddDomainEvent(new CreateCityDomainEvent(this));
+            //AddDomainEvent(new CreateEntityDomainEvent<City>(this));
+        }
+
+        public static City Create(string? name, string? uf)
+        {
+            return new City(name, uf);
         }
 
         public static City Create(Guid? id, string? name, string? uf)
         {
             if (id.HasValue)
-                return new City(id.Value, name, uf);
-            return new City(Entity.GenerateNewEntityId(), name, uf);
+                return new City(name, uf) { Id = id.Value };
+            return new City(name, uf);
         }
 
-        public static City Create(string? name, string? uf)
-        {
-            return new City(Entity.GenerateNewEntityId(), name, uf);
-        }
     }
 }
