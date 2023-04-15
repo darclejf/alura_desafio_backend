@@ -1,6 +1,6 @@
 ﻿using AluraChallenge.Adopet.Application.Commands;
-using AluraChallenge.Adopet.Core.Exceptions;
-using AluraChallenge.Adopet.Core.Models;
+using AluraChallenge.Adopet.Application.Extensions;
+using AluraChallenge.Adopet.Application.Response;
 using AluraChallenge.Adopet.Domain;
 using AluraChallenge.Adopet.Domain.Interfaces;
 using AutoMapper;
@@ -8,43 +8,46 @@ using MediatR;
 
 namespace AluraChallenge.Adopet.Application.Handlers
 {
-    public class ShelterCommandHandler :
-                                IRequestHandler<CreateShelterCommandRequest, ShelterResponse>,
-                                IRequestHandler<ChangeShelterPropertiesCommandRequest, ShelterResponse>,
-                                IRequestHandler<ChangeShelterAddressCommandRequest, ShelterResponse>,
-                                IRequestHandler<ChangeShelterNameCommandRequest, ShelterResponse>,
-                                IRequestHandler<ChangeShelterPhoneCommandRequest, ShelterResponse>,
-                                IRequestHandler<ChangeShelterUrlImageCommandRequest, ShelterResponse>,
-                                IRequestHandler<DeleteShelterCommandRequest, bool>,
-                                IRequestHandler<AddPetCommandRequest, PetResponse>
+    public class ShelterCommandHandler : BasePersonHandler<Shelter>,
+                                IRequestHandler<CreateShelterCommandRequest, ApplicationResponse<ShelterResponse>>,
+                                IRequestHandler<ChangeShelterPropertiesCommandRequest, ApplicationResponse<ShelterResponse>>,
+                                IRequestHandler<ChangeShelterAddressCommandRequest, ApplicationResponse<ShelterResponse>>,
+                                IRequestHandler<ChangeShelterNameCommandRequest, ApplicationResponse<ShelterResponse>>,
+                                IRequestHandler<ChangeShelterPhoneCommandRequest, ApplicationResponse<ShelterResponse>>,
+                                IRequestHandler<ChangeShelterUrlImageCommandRequest, ApplicationResponse<ShelterResponse>>,
+                                IRequestHandler<DeleteShelterCommandRequest, ApplicationResponse<bool>>,
+                                IRequestHandler<AddPetCommandRequest, ApplicationResponse<PetResponse>>
     {
-        private readonly IShelterRepository _repository;
-        private readonly ICityRepository _cityRepository;
         private readonly IMapper _mapper;
 
-        public ShelterCommandHandler(IShelterRepository repository, ICityRepository cityRepository, IMapper mapper)
+        public ShelterCommandHandler(IShelterRepository repository, ICityRepository cityRepository, IMapper mapper) : base(repository, cityRepository)
         {
-            _repository = repository;
-            _cityRepository = cityRepository;
             _mapper = mapper;
         }
 
-        public async Task<ShelterResponse> Handle(CreateShelterCommandRequest command, CancellationToken cancellationToken)
+        public async Task<ApplicationResponse<ShelterResponse>> Handle(CreateShelterCommandRequest command, CancellationToken cancellationToken)
         {
+            var validation = new CreateShelterCommandRequestValidation().Validate(command);
+            if (!validation.IsValid)
+                return new ApplicationResponse<ShelterResponse>(false, validation.ToErrorResponse());
+
             var entity = Shelter.Create(command.Request.Name,
                                    command.Request.Email,
-                                   command.Request.Password,
-                                   command.Request.ConfirmPassword,
+                                   command.UserId,
                                    command.Request.Phone);
 
             await _repository.AddAsync(entity);
             await _repository.SaveAsync();
-            return _mapper.Map<ShelterResponse>(entity);
+            return new ApplicationResponse<ShelterResponse>(true, _mapper.Map<ShelterResponse>(entity));
         }
 
-        public async Task<PetResponse> Handle(AddPetCommandRequest command, CancellationToken cancellationToken)
+        public async Task<ApplicationResponse<PetResponse>> Handle(AddPetCommandRequest command, CancellationToken cancellationToken)
         {
-            var entity = await GetShelterByIdAsync(command.Request.ShelterId);
+            var validation = new AddPetCommandRequestValidation().Validate(command);
+            if (!validation.IsValid)
+                return new ApplicationResponse<PetResponse>(false, validation.ToErrorResponse());
+
+            var entity = await GetByIdAsync(command.Request.ShelterId);
             var pet = entity.AddPet(
                             name: command.Request.Name,
                             specimen: command.Request.Specimen,
@@ -53,92 +56,57 @@ namespace AluraChallenge.Adopet.Application.Handlers
                             gender: command.Request.Gender, 
                             age: command.Request.Age);
             await _repository.SaveAsync();
-            return _mapper.Map<PetResponse>(pet);
+            return new ApplicationResponse<PetResponse>(true, _mapper.Map<PetResponse>(entity));
         }
 
-        public async Task<ShelterResponse> Handle(ChangeShelterPropertiesCommandRequest command, CancellationToken cancellationToken)
+        public async Task<ApplicationResponse<ShelterResponse>> Handle(ChangeShelterPropertiesCommandRequest command, CancellationToken cancellationToken)
         {
-            var entity = await GetShelterByIdAsync(command.Id);
-            if (!string.IsNullOrEmpty(command.Request.Name)) //TODO isso é uma regra de dominio?
-                entity.ChangeName(command.Request.Name);
-            if (!string.IsNullOrEmpty(command.Request.UrlImage))
-                entity.ChangeUrlImage(command.Request.UrlImage);
-            if (!string.IsNullOrEmpty(command.Request.Phone))
-                entity.ChangePhone(command.Request.Phone);
-            if (!string.IsNullOrEmpty(command.Request.About))
-                entity.ChangePhone(command.Request.About);
-            if (!command.Request.CityId.HasValue || (!string.IsNullOrEmpty(command.Request.CityName) && !string.IsNullOrEmpty(command.Request.Uf))) //TODO isso é uma regra de dominio?
-            {
-                var city = await _cityRepository.GetByNameAsync(command.Request.CityName, command.Request.Uf);
-                if (city != null)
-                    entity.ChangeAddress(command.Request.AddressDescription, city);
-                else
-                    entity.ChangeAddress(command.Request.AddressDescription, command.Request.CityId, command.Request.CityName, command.Request.Uf);
-            }
-            else if (!string.IsNullOrEmpty(command.Request.AddressDescription) || command.Request.CityId.HasValue || !string.IsNullOrEmpty(command.Request.CityName) || !string.IsNullOrEmpty(command.Request.Uf))
-                entity.ChangeAddress(command.Request.AddressDescription, command.Request.CityId, command.Request.CityName, command.Request.Uf);
+            var validation = new ChangeShelterPropertiesCommandRequestValidation().Validate(command);
+            if (!validation.IsValid)
+                return new ApplicationResponse<ShelterResponse>(false, validation.ToErrorResponse());
 
-            await _repository.SaveAsync();
-            return _mapper.Map<ShelterResponse>(entity); ;
+            var entity = await ChangePropertiesAsync(command.Id, command.Request);
+            return new ApplicationResponse<ShelterResponse>(true, _mapper.Map<ShelterResponse>(entity));
         }
 
-        public async Task<ShelterResponse> Handle(ChangeShelterAddressCommandRequest command, CancellationToken cancellationToken)
+        public async Task<ApplicationResponse<ShelterResponse>> Handle(ChangeShelterAddressCommandRequest command, CancellationToken cancellationToken)
         {
-            var entity = await GetShelterByIdAsync(command.Id);
-            if (!command.Request.CityId.HasValue || (!string.IsNullOrEmpty(command.Request.CityName) && !string.IsNullOrEmpty(command.Request.Uf))) //TODO isso é uma regra de dominio?
-            {
-                var city = await _cityRepository.GetByNameAsync(command.Request.CityName, command.Request.Uf);
-                if (city != null)
-                    entity.ChangeAddress(command.Request.AddressDescription, city);
-                else
-                    entity.ChangeAddress(command.Request.AddressDescription, command.Request.CityId, command.Request.CityName, command.Request.Uf);
-            }
-            else if (!string.IsNullOrEmpty(command.Request.AddressDescription) || command.Request.CityId.HasValue || !string.IsNullOrEmpty(command.Request.CityName) || !string.IsNullOrEmpty(command.Request.Uf))
-                entity.ChangeAddress(command.Request.AddressDescription, command.Request.CityId, command.Request.CityName, command.Request.Uf);
-            await _repository.SaveAsync();
-            return _mapper.Map<ShelterResponse>(entity);
+            var validation = new ChangeShelterAddressCommandRequestValidation().Validate(command);
+            if (!validation.IsValid)
+                return new ApplicationResponse<ShelterResponse>(false, validation.ToErrorResponse());
+
+            var entity = await ChangeAddressAsync(command.Id, command.Request);
+            return new ApplicationResponse<ShelterResponse>(true, _mapper.Map<ShelterResponse>(entity));
         }
 
-        public async Task<ShelterResponse> Handle(ChangeShelterNameCommandRequest command, CancellationToken cancellationToken)
+        public async Task<ApplicationResponse<ShelterResponse>> Handle(ChangeShelterNameCommandRequest command, CancellationToken cancellationToken)
         {
-            var entity = await GetShelterByIdAsync(command.Id);
-            entity.ChangeName(command.Request.Name);
-            await _repository.SaveAsync();
-            return _mapper.Map<ShelterResponse>(entity);
+            var validation = new ChangeShelterNameCommandRequestValidation().Validate(command);
+            if (!validation.IsValid)
+                return new ApplicationResponse<ShelterResponse>(false, validation.ToErrorResponse());
+
+            var entity = await ChangeNameAsync(command.Id, command.Request);
+            return new ApplicationResponse<ShelterResponse>(true, _mapper.Map<ShelterResponse>(entity));
         }
 
-        public async Task<ShelterResponse> Handle(ChangeShelterPhoneCommandRequest command, CancellationToken cancellationToken)
+        public async Task<ApplicationResponse<ShelterResponse>> Handle(ChangeShelterPhoneCommandRequest command, CancellationToken cancellationToken)
         {
-            var entity = await GetShelterByIdAsync(command.Id);
-            entity.ChangePhone(command.Request.Phone);
-            await _repository.SaveAsync();
-            return _mapper.Map<ShelterResponse>(entity);
+            var entity = await ChangePhoneAsync(command.Id, command.Request);
+            return new ApplicationResponse<ShelterResponse>(true, _mapper.Map<ShelterResponse>(entity));
         }
 
-        public async Task<ShelterResponse> Handle(ChangeShelterUrlImageCommandRequest command, CancellationToken cancellationToken)
+        public async Task<ApplicationResponse<ShelterResponse>> Handle(ChangeShelterUrlImageCommandRequest command, CancellationToken cancellationToken)
         {
-            var entity = await GetShelterByIdAsync(command.Id);
-            entity.ChangeUrlImage(command.Request.UrlImage);
-            await _repository.SaveAsync();
-            return _mapper.Map<ShelterResponse>(entity);
+            var entity = await ChangeUrlImageAsync(command.Id, command.Request);
+            return new ApplicationResponse<ShelterResponse>(true, _mapper.Map<ShelterResponse>(entity));
         }
-
-        public async Task<bool> Handle(DeleteShelterCommandRequest command, CancellationToken cancellationToken)
+ 
+        public async Task<ApplicationResponse<bool>> Handle(DeleteShelterCommandRequest command, CancellationToken cancellationToken)
         {
-            var entity = await GetShelterByIdAsync(command.Id);
-            await _repository.DeleteAsync(entity);
-            await _repository.SaveAsync();
-            return true;
+            var validation = new DeleteShelterCommandRequestValidation().Validate(command);
+            if (!validation.IsValid)
+                return new ApplicationResponse<bool>(false, validation.ToErrorResponse());
+            return new ApplicationResponse<bool> { IsValid = true, Result = await DeleteAsync(command.Id) };
         }
-
-        private async Task<Shelter> GetShelterByIdAsync(Guid id)
-        {
-            var tutor = await _repository.GetByIdAsync(id);
-            if (tutor == null)
-                throw new EntityNotFoundException();
-
-            return tutor;
-        }
-
     }
 }

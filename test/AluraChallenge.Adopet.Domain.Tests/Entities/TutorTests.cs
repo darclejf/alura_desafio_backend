@@ -1,5 +1,5 @@
 ﻿using AluraChallenge.Adopet.Core.Exceptions;
-using AluraChallenge.Adopet.Domain.Enums;
+using System;
 using Xunit;
 
 namespace AluraChallenge.Adopet.Domain.Tests.Entities
@@ -9,13 +9,13 @@ namespace AluraChallenge.Adopet.Domain.Tests.Entities
         [Fact]
         public void TutorCreateSuccess()
         {
-            var tutor = Tutor.Create("Tutor 1", "teste@teste.com", "@123456", "@123456", "(55)9999999");
+            var userId = Guid.NewGuid();
+            var tutor = Tutor.Create("Tutor 1", "teste@teste.com", userId, "(55)9999999");
             Assert.NotNull(tutor);
             Assert.Equal("Tutor 1", tutor.Name);
             Assert.Equal("teste@teste.com", tutor.Email.Address);
-            Assert.Equal("teste@teste.com", tutor.User.UserName);
+            Assert.Equal(userId, tutor.UserId);
             Assert.Equal("(55)9999999", tutor.Phone);
-            Assert.Equal(ProfileRole.Tutor, tutor.User.Role);
         }
 
         [Theory]
@@ -23,20 +23,23 @@ namespace AluraChallenge.Adopet.Domain.Tests.Entities
         [InlineData(null)]
         public void TutorCreateFailNameEmptyException(string? name)
         {
-            Assert.Throws<EmptyNameException>(() => Tutor.Create(name, "teste@teste.com", "@123456", "@123456", "(55)9999999"));
+            Assert.Throws<EmptyNameException>(() => Tutor.Create(name, "teste@teste.com", Guid.NewGuid(), "(55)9999999"));
         }
         
 
         [Fact]
         public void TutorChangeNameSuccess()
         {
-
+            var tutor = Tutor.Create("Tutor 1", "teste@teste.com", Guid.NewGuid(), "(55)9999999");
+            tutor.ChangeName("novo nome");
+            Assert.Equal("novo nome", tutor.Name);
         }
 
         [Fact]
         public void TutorChangeNameFailException()
         {
-
+            var tutor = Tutor.Create("Tutor 1", "teste@teste.com", Guid.NewGuid(), "(55)9999999");
+            Assert.Throws<EmptyNameException>(() => tutor.ChangeName(""));
         }
 
         [Fact]
@@ -50,7 +53,5 @@ namespace AluraChallenge.Adopet.Domain.Tests.Entities
         {
 
         }
-
-
     }
 }

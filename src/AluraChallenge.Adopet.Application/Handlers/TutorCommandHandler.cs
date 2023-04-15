@@ -1,6 +1,6 @@
 ﻿using AluraChallenge.Adopet.Application.Commands;
-using AluraChallenge.Adopet.Core.Exceptions;
-using AluraChallenge.Adopet.Core.Models;
+using AluraChallenge.Adopet.Application.Extensions;
+using AluraChallenge.Adopet.Application.Response;
 using AluraChallenge.Adopet.Domain;
 using AluraChallenge.Adopet.Domain.Interfaces;
 using AutoMapper;
@@ -8,141 +8,98 @@ using MediatR;
 
 namespace AluraChallenge.Adopet.Application.Handlers
 {
-    public class TutorCommandHandler : //TODO refatorar para um PersonHandler??
-                        IRequestHandler<CreateTutorCommandRequest, TutorResponse>,
-                        IRequestHandler<ChangeTutorPropertiesCommandRequest, TutorResponse>,
-                        IRequestHandler<ChangeTutorAboutCommandRequest, TutorResponse>,
-                        IRequestHandler<ChangeTutorAddressCommandRequest, TutorResponse>,
-                        IRequestHandler<ChangeTutorNameCommandRequest, TutorResponse>,
-                        IRequestHandler<ChangeTutorPhoneCommandRequest, TutorResponse>,
-                        IRequestHandler<ChangeTutorUrlImageCommandRequest, TutorResponse>,
-                        IRequestHandler<ChangeTutorPasswordCommandRequest, bool>,
-                        IRequestHandler<DeleteTutorCommandRequest, bool> 
+    public class TutorCommandHandler : BasePersonHandler<Tutor>, //TODO refatorar para um PersonHandler??
+                        IRequestHandler<CreateTutorCommandRequest, ApplicationResponse<TutorResponse>>,
+                        IRequestHandler<ChangeTutorPropertiesCommandRequest, ApplicationResponse<TutorResponse>>,
+                        IRequestHandler<ChangeTutorAboutCommandRequest, ApplicationResponse<TutorResponse>>,
+                        IRequestHandler<ChangeTutorAddressCommandRequest, ApplicationResponse<TutorResponse>>,
+                        IRequestHandler<ChangeTutorNameCommandRequest, ApplicationResponse<TutorResponse>>,
+                        IRequestHandler<ChangeTutorPhoneCommandRequest, ApplicationResponse<TutorResponse>>,
+                        IRequestHandler<ChangeTutorUrlImageCommandRequest, ApplicationResponse<TutorResponse>>,
+                        IRequestHandler<DeleteTutorCommandRequest, ApplicationResponse<bool>> 
     {
-        private readonly ITutorRepository _repository;
-        private readonly ICityRepository _cityRepository;
         private readonly IMapper _mapper;
 
-        public TutorCommandHandler(ITutorRepository repository, ICityRepository cityRepository, IMapper mapper)
+        public TutorCommandHandler(ITutorRepository repository, ICityRepository cityRepository, IMapper mapper) : base(repository, cityRepository)
         {
-            _repository = repository;
-            _cityRepository = cityRepository;
             _mapper = mapper;
         }
 
-        public async Task<TutorResponse> Handle(CreateTutorCommandRequest command, CancellationToken cancellationToken)
+        public async Task<ApplicationResponse<TutorResponse>> Handle(CreateTutorCommandRequest command, CancellationToken cancellationToken)
         {
-            var tutor = Tutor.Create(command.Request.Name, 
-                                    command.Request.Email, 
-                                    command.Request.Password, 
-                                    command.Request.ConfirmPassword,
+            var validation = new CreateTutorCommandRequestValidation().Validate(command);
+            if (!validation.IsValid)
+                return new ApplicationResponse<TutorResponse>(false, validation.ToErrorResponse());
+
+            var entity = Tutor.Create(command.Request.Name, 
+                                    command.Request.Email,
+                                    command.UserId,
                                     command.Request.Phone);
 
-            await _repository.AddAsync(tutor);
+            await _repository.AddAsync(entity);
             await _repository.SaveAsync();
-
-            return _mapper.Map<TutorResponse>(tutor);
+            return new ApplicationResponse<TutorResponse>(true, _mapper.Map<TutorResponse>(entity));
         }
 
-        public async Task<bool> Handle(ChangeTutorPasswordCommandRequest command, CancellationToken cancellationToken)
+        public async Task<ApplicationResponse<bool>> Handle(DeleteTutorCommandRequest command, CancellationToken cancellationToken)
         {
-            var tutor = await GetTutorByIdAsync(command.Id);
-            tutor.User.ChangePassword(command.Request.Password, command.Request.ConfirmPassword);
-            await _repository.SaveAsync();
-            return true;
+            var validation = new DeleteTutorCommandRequestValidation().Validate(command);
+            if (!validation.IsValid)
+                return new ApplicationResponse<bool>(false, validation.ToErrorResponse());
+
+            var entity = await GetByIdAsync(command.Id);
+            await _repository.DeleteAsync(entity);
+            return new ApplicationResponse<bool>{ IsValid = true, Result = true };
         }
 
-        public async Task<bool> Handle(DeleteTutorCommandRequest command, CancellationToken cancellationToken)
+        public async Task<ApplicationResponse<TutorResponse>> Handle(ChangeTutorPropertiesCommandRequest command, CancellationToken cancellationToken)
         {
-            var tutor = await GetTutorByIdAsync(command.Id);
-            await _repository.DeleteAsync(tutor);
-            await _repository.SaveAsync();
-            return true;
+            var validation = new ChangeTutorPropertiesCommandRequestValidation().Validate(command);
+            if (!validation.IsValid)
+                return new ApplicationResponse<TutorResponse>(false, validation.ToErrorResponse());
+
+            var entity = await ChangePropertiesAsync(command.Id, command.Request);
+            return new ApplicationResponse<TutorResponse>(true, _mapper.Map<TutorResponse>(entity));
         }
 
-        public async Task<TutorResponse> Handle(ChangeTutorPropertiesCommandRequest command, CancellationToken cancellationToken)
+        public async Task<ApplicationResponse<TutorResponse>> Handle(ChangeTutorAboutCommandRequest command, CancellationToken cancellationToken)
         {
-            var tutor = await GetTutorByIdAsync(command.Id);
-            if (!string.IsNullOrEmpty(command.Request.Name)) //TODO isso é uma regra de dominio?
-                tutor.ChangeName(command.Request.Name);
-            if (!string.IsNullOrEmpty(command.Request.UrlImage))
-                tutor.ChangeUrlImage(command.Request.UrlImage);
-            if (!string.IsNullOrEmpty(command.Request.Phone))
-                tutor.ChangePhone(command.Request.Phone);
-            if (!string.IsNullOrEmpty(command.Request.About))
-                tutor.ChangePhone(command.Request.About);
-            if (!command.Request.CityId.HasValue || (!string.IsNullOrEmpty(command.Request.CityName) && !string.IsNullOrEmpty(command.Request.Uf))) //TODO isso é uma regra de dominio?
-            {
-                var city = await _cityRepository.GetByNameAsync(command.Request.CityName, command.Request.Uf);
-                if (city != null)
-                    tutor.ChangeAddress(command.Request.AddressDescription, city);
-                else
-                    tutor.ChangeAddress(command.Request.AddressDescription, command.Request.CityId, command.Request.CityName, command.Request.Uf);
-            }
-            else if (!string.IsNullOrEmpty(command.Request.AddressDescription) || command.Request.CityId.HasValue || !string.IsNullOrEmpty(command.Request.CityName) || !string.IsNullOrEmpty(command.Request.Uf))
-                tutor.ChangeAddress(command.Request.AddressDescription, command.Request.CityId, command.Request.CityName, command.Request.Uf);
-
+            var entity = await GetByIdAsync(command.Id);
+            entity.ChangeAbout(command.Request.About);
             await _repository.SaveAsync();
-
-            return _mapper.Map<TutorResponse>(tutor);
+            return new ApplicationResponse<TutorResponse>(true, _mapper.Map<TutorResponse>(entity));
         }
 
-        public async Task<TutorResponse> Handle(ChangeTutorAboutCommandRequest command, CancellationToken cancellationToken)
+        public async Task<ApplicationResponse<TutorResponse>> Handle(ChangeTutorAddressCommandRequest command, CancellationToken cancellationToken)
         {
-            var tutor = await GetTutorByIdAsync(command.Id);
-            tutor.ChangeAbout(command.Request.About);
-            await _repository.SaveAsync();
-            return _mapper.Map<TutorResponse>(tutor);
+            var validation = new ChangeTutorAddressCommandRequestValidation().Validate(command);
+            if (!validation.IsValid)
+                return new ApplicationResponse<TutorResponse>(false, validation.ToErrorResponse());
+
+            var entity = await ChangeAddressAsync(command.Id, command.Request);
+            return new ApplicationResponse<TutorResponse>(true, _mapper.Map<TutorResponse>(entity));
         }
 
-        public async Task<TutorResponse> Handle(ChangeTutorAddressCommandRequest command, CancellationToken cancellationToken)
+        public async Task<ApplicationResponse<TutorResponse>> Handle(ChangeTutorNameCommandRequest command, CancellationToken cancellationToken)
         {
-            var tutor = await GetTutorByIdAsync(command.Id);
-            if (!command.Request.CityId.HasValue || (!string.IsNullOrEmpty(command.Request.CityName) && !string.IsNullOrEmpty(command.Request.Uf))) //TODO isso é uma regra de dominio?
-            {
-                var city = await _cityRepository.GetByNameAsync(command.Request.CityName, command.Request.Uf);
-                if (city != null)
-                    tutor.ChangeAddress(command.Request.AddressDescription, city);
-                else
-                    tutor.ChangeAddress(command.Request.AddressDescription, command.Request.CityId, command.Request.CityName, command.Request.Uf);
-            }
-            else if (!string.IsNullOrEmpty(command.Request.AddressDescription) || command.Request.CityId.HasValue || !string.IsNullOrEmpty(command.Request.CityName) || !string.IsNullOrEmpty(command.Request.Uf))
-                tutor.ChangeAddress(command.Request.AddressDescription, command.Request.CityId, command.Request.CityName, command.Request.Uf);
-            await _repository.SaveAsync();
-            return _mapper.Map<TutorResponse>(tutor);
+            var validation = new ChangeTutorNameCommandRequestValidation().Validate(command);
+            if (!validation.IsValid)
+                return new ApplicationResponse<TutorResponse>(false, validation.ToErrorResponse());
+
+            var entity = await ChangeNameAsync(command.Id, command.Request);
+            return new ApplicationResponse<TutorResponse>(true, _mapper.Map<TutorResponse>(entity));
         }
 
-        public async Task<TutorResponse> Handle(ChangeTutorNameCommandRequest command, CancellationToken cancellationToken)
+        public async Task<ApplicationResponse<TutorResponse>> Handle(ChangeTutorPhoneCommandRequest command, CancellationToken cancellationToken)
         {
-            var tutor = await GetTutorByIdAsync(command.Id);
-            tutor.ChangeName(command.Request.Name);
-            await _repository.SaveAsync();
-            return _mapper.Map<TutorResponse>(tutor);
+            var entity = await ChangePhoneAsync(command.Id, command.Request);
+            return new ApplicationResponse<TutorResponse>(true, _mapper.Map<TutorResponse>(entity));
         }
 
-        public async Task<TutorResponse> Handle(ChangeTutorPhoneCommandRequest command, CancellationToken cancellationToken)
+        public async Task<ApplicationResponse<TutorResponse>> Handle(ChangeTutorUrlImageCommandRequest command, CancellationToken cancellationToken)
         {
-            var tutor = await GetTutorByIdAsync(command.Id);
-            tutor.ChangePhone(command.Request.Phone);
-            await _repository.SaveAsync();
-            return _mapper.Map<TutorResponse>(tutor);
-        }
-
-        public async Task<TutorResponse> Handle(ChangeTutorUrlImageCommandRequest command, CancellationToken cancellationToken)
-        {
-            var tutor = await GetTutorByIdAsync(command.Id);
-            tutor.ChangeUrlImage(command.Request.UrlImage);
-            await _repository.SaveAsync();
-            return _mapper.Map<TutorResponse>(tutor);
-        }
-
-        private async Task<Tutor> GetTutorByIdAsync(Guid id)
-        {
-            var tutor = await _repository.GetByIdAsync(id);
-            if (tutor == null)
-                throw new EntityNotFoundException();
-
-            return tutor;
+            var entity = await ChangeUrlImageAsync(command.Id, command.Request);
+            return new ApplicationResponse<TutorResponse>(true, _mapper.Map<TutorResponse>(entity));
         }
     }
 }

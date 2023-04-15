@@ -22,11 +22,6 @@ namespace AluraChallenge.Adopet.Data.Mappings
             builder.Property(e => e.Phone)
                 .HasColumnType("nvarchar(250)");
 
-            builder.HasOne(e => e.User)
-                .WithOne()
-                .HasForeignKey<Shelter>(e => e.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             builder.HasOne(e => e.City)
                 .WithOne()
                 .HasForeignKey<Shelter>(e => e.CityId)
@@ -36,6 +31,10 @@ namespace AluraChallenge.Adopet.Data.Mappings
                 .WithOne(e => e.Shelter)
                 .HasForeignKey(e => e.ShelterId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            //builder.HasOne<IdentityUser>() //TODO error para FK com identityuser:  The entity type 'IdentityUserLogin' requires a primary key to be defined
+            //    .WithMany()
+            //    .HasForeignKey("UserId");
 
             builder.Property(e => e.UrlImage)
                 .HasColumnType("nvarchar(MAX)");

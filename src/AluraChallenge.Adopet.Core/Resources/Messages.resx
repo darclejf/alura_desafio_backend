@@ -117,11 +117,38 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="EmptyBehaviorException" xml:space="preserve">
+    <value>É necessário informar o comportamento do Pet</value>
+  </data>
+  <data name="EmptyEntityIdException" xml:space="preserve">
+    <value>É necessário informar o Id</value>
+  </data>
+  <data name="EmptyGenderException" xml:space="preserve">
+    <value>É necessário informar o gênero do Pet</value>
+  </data>
   <data name="EmptyNameException" xml:space="preserve">
     <value>É necessário informar seu nome</value>
   </data>
+  <data name="EmptyPetAgeException" xml:space="preserve">
+    <value>É necessário informar a idade do Pet</value>
+  </data>
+  <data name="EmptyShelterIdException" xml:space="preserve">
+    <value>É necessário informar o identificador do abrigo</value>
+  </data>
+  <data name="EmptySizeException" xml:space="preserve">
+    <value>É necessário informar o tamanho do Pet</value>
+  </data>
+  <data name="EmptySpecimenException" xml:space="preserve">
+    <value>É necessário informar a espécie do Pet</value>
+  </data>
+  <data name="EmptyUFException" xml:space="preserve">
+    <value>É necessário informar um UF</value>
+  </data>
   <data name="EntityNotFoundException" xml:space="preserve">
     <value>Objeto não encontrado</value>
+  </data>
+  <data name="ExistsEmailException" xml:space="preserve">
+    <value>E-mail já cadastrado</value>
   </data>
   <data name="InvalidConfirmationPasswordException" xml:space="preserve">
     <value>As senhas não batem</value>

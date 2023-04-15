@@ -1,4 +1,4 @@
-﻿namespace AluraChallenge.Adopet.Core.Models
+﻿namespace AluraChallenge.Adopet.ApplicationQuery.Response
 {
     [Serializable]
     public class PaginationListResponse<T>

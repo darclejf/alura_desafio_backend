@@ -1,6 +1,6 @@
 ﻿using AluraChallenge.Adopet.Application.Commands;
+using AluraChallenge.Adopet.Application.Response;
 using AluraChallenge.Adopet.Core.Exceptions;
-using AluraChallenge.Adopet.Core.Models;
 using AluraChallenge.Adopet.Domain.Interfaces;
 using AutoMapper;
 using MediatR;
@@ -8,8 +8,8 @@ using MediatR;
 namespace AluraChallenge.Adopet.Application.Handlers
 {
     public class AdopetCommandHandler :
-                                IRequestHandler<AdopetPetCommandRequest, AdopetResponse>,
-                                IRequestHandler<DeleteAdopetCommandRequest, bool>
+                                IRequestHandler<AdopetPetCommandRequest, ApplicationResponse<AdopetResponse>>,
+                                IRequestHandler<DeleteAdopetCommandRequest, ApplicationResponse<bool>>
 
     {
         private readonly ITutorRepository _tutorRepository;
@@ -25,7 +25,7 @@ namespace AluraChallenge.Adopet.Application.Handlers
             _mapper = mapper;
         }
 
-        public async Task<AdopetResponse> Handle(AdopetPetCommandRequest request, CancellationToken cancellationToken)
+        public async Task<ApplicationResponse<AdopetResponse>> Handle(AdopetPetCommandRequest request, CancellationToken cancellationToken)
         {
             var pet = await _shelterRepository.GetPetByIdAsync(request.PetId);
             if (pet == null)
@@ -38,10 +38,10 @@ namespace AluraChallenge.Adopet.Application.Handlers
             var adopet = Domain.Adopet.Create(tutor, pet);
             await _adopetRepository.AddAsync(adopet);
             await _adopetRepository.SaveAsync();
-            return _mapper.Map<AdopetResponse>(adopet);
+            return new ApplicationResponse<AdopetResponse> { IsValid = true, Result = _mapper.Map<AdopetResponse>(adopet) };
         }
 
-        public async Task<bool> Handle(DeleteAdopetCommandRequest request, CancellationToken cancellationToken)
+        public async Task<ApplicationResponse<bool>> Handle(DeleteAdopetCommandRequest request, CancellationToken cancellationToken)
         {
             var adopet = await _adopetRepository.GetByIdAsync(request.Id);
             if (adopet == null)
@@ -50,7 +50,7 @@ namespace AluraChallenge.Adopet.Application.Handlers
             adopet.Pet.NotAdopeted(); //TODO regra de domínio?
             await _adopetRepository.DeleteAsync(adopet);
             await _adopetRepository.SaveAsync();
-            return true;
+            return new ApplicationResponse<bool> { IsValid = true, Result = true };
         }
     }
 }

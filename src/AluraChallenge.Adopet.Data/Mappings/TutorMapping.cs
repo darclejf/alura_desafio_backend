@@ -25,15 +25,14 @@ namespace AluraChallenge.Adopet.Data.Mappings
             builder.Property(e => e.About)
                 .HasColumnType("nvarchar(MAX)");
 
-            builder.HasOne(e => e.User)
-                .WithOne()
-                .HasForeignKey<Tutor>(e => e.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             builder.HasOne(e => e.City)
                 .WithOne()
                 .HasForeignKey<Tutor>(e => e.CityId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            //builder.HasOne<IdentityUser>()  //TODO error para FK com identityuser:  The entity type 'IdentityUserLogin' requires a primary key to be defined
+            //    .WithMany()
+            //    .HasForeignKey("UserId");
 
             builder.Property(e => e.UrlImage)
                 .HasColumnType("nvarchar(MAX)");

@@ -1,4 +1,4 @@
-﻿using AluraChallenge.Adopet.Core.Models;
+﻿using AluraChallenge.Adopet.Application.Response;
 using AluraChallenge.Adopet.Domain;
 using AutoMapper;
 
@@ -9,17 +9,18 @@ namespace AluraChallenge.Adopet.Application.AutoMapper
         public DomainToResponseModelProfile()
         {
             CreateMap<Tutor, TutorResponse>()
-                .ForMember(d => d.Id, o => o.MapFrom(s => s.Id))
-                .ForMember(d => d.Name, o => o.MapFrom(s => s.Name))
-                .ForMember(d => d.Email, o => o.MapFrom(s => s.Email.Address));
+                .ForMember(d => d.Email, o => o.MapFrom(s => s.Email.Address))
+                .ForMember(d => d.CityName, o => o.MapFrom(s => s.City != null ? s.City.Name : ""));
 
             CreateMap<Pet, PetResponse>();
 
             CreateMap<Domain.Adopet, AdopetResponse>();
             
             CreateMap<City, CityResponse>();
-            CreateMap<User, UserResponse>();
-            CreateMap<Shelter, ShelterResponse>();
+
+            CreateMap<Shelter, ShelterResponse>()
+                .ForMember(d => d.Email, o => o.MapFrom(s => s.Email.Address))
+                .ForMember(d => d.CityName, o => o.MapFrom(s => s.City != null ? s.City.Name : ""));
         }
     }
 }

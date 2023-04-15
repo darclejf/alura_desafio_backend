@@ -1,4 +1,5 @@
 ﻿using AluraChallenge.Adopet.Application.Commands;
+using AluraChallenge.Adopet.Application.Response;
 using AluraChallenge.Adopet.Core.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

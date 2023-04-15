@@ -1,4 +1,4 @@
-﻿using AluraChallenge.Adopet.Domain.Enums;
+﻿using AluraChallenge.Adopet.Core;
 
 namespace AluraChallenge.Adopet.Application.Request
 {

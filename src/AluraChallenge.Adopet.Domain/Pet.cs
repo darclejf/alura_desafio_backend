@@ -1,6 +1,5 @@
 ﻿using AluraChallenge.Adopet.Domain.Abstraction;
-using AluraChallenge.Adopet.Domain.DomainEvents;
-using AluraChallenge.Adopet.Domain.Enums;
+using AluraChallenge.Adopet.Core;
 
 namespace AluraChallenge.Adopet.Domain
 {

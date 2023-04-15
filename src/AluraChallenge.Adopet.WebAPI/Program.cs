@@ -1,20 +1,19 @@
-using AluraChallenge.Adopet.Application.Commands;
 using AluraChallenge.Adopet.Data;
 using AluraChallenge.Adopet.WebAPI.Extensions;
 using AluraChallenge.Adopet.WebAPI.Setup;
-using MediatR;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-ConfigureServices(builder.Services, builder.Configuration);
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Add services to the container.
+ConfigureServices(builder.Services, builder.Configuration);
 
 var app = builder.Build();
 
@@ -27,6 +26,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
@@ -40,8 +40,12 @@ void ConfigureServices(IServiceCollection services, ConfigurationManager configu
 {
     services.AddDbContext<AdopetDbContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
     //services.AddDbContext<AdopetDbContext>(opt => opt.UseSqlite("DataSource=adopet.db;Cache=Shared");
+    services.AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>()
+                .AddEntityFrameworkStores<AdopetDbContext>()
+                .AddDefaultTokenProviders();
 
     services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
+    services.RegisterAuthenticationServices();
     services.RegisterServices();
 }

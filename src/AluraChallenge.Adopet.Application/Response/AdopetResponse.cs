@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AluraChallenge.Adopet.Core.Models
+namespace AluraChallenge.Adopet.Application.Response
 {
     public class AdopetResponse : BaseEntityResponse
     {
