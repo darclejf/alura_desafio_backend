@@ -3,14 +3,13 @@
     [Serializable]
     public class ErrorResponse
     {
-        public string? Message { get; set; }
-        public string? StackTrace { get; set; }
+        public List<string>? Messages { get; set; }
 
-        public ErrorResponse(){}
-        public ErrorResponse(string message, string stackTrace) 
+        public ErrorResponse() { }
+
+        public ErrorResponse(List<string>? messages)
         {
-            Message = message;
-            StackTrace = stackTrace;
+            Messages = messages;
         }
     }
 }

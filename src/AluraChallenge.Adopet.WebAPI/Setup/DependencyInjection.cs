@@ -1,8 +1,9 @@
 ﻿using AluraChallenge.Adopet.Application.Commands;
 using AluraChallenge.Adopet.Application.Handlers;
+using AluraChallenge.Adopet.Application.Response;
 using AluraChallenge.Adopet.ApplicationQuery;
-using AluraChallenge.Adopet.ApplicationQuery.AutoMapper;
-using AluraChallenge.Adopet.Core.Models;
+using AluraChallenge.Adopet.Authentication.Interfaces;
+using AluraChallenge.Adopet.Authentication.Services;
 using AluraChallenge.Adopet.Data;
 using AluraChallenge.Adopet.Data.Repositories;
 using AluraChallenge.Adopet.Domain;
@@ -10,6 +11,9 @@ using AluraChallenge.Adopet.Domain.DomainEvents;
 using AluraChallenge.Adopet.Domain.DomainEventsHandlers;
 using AluraChallenge.Adopet.Domain.Interfaces;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace AluraChallenge.Adopet.WebAPI.Setup
 {
@@ -17,7 +21,8 @@ namespace AluraChallenge.Adopet.WebAPI.Setup
     {
         public static void RegisterServices(this IServiceCollection services)
         {
-            services.AddAutoMapper(typeof(DomainToResponseModelProfile));
+            services.AddAutoMapper(typeof(ApplicationQuery.AutoMapper.DomainToResponseModelProfile));
+            services.AddAutoMapper(typeof(Application.AutoMapper.DomainToResponseModelProfile));
 
             services.AddScoped<AdopetDbContext>();
 
@@ -28,6 +33,23 @@ namespace AluraChallenge.Adopet.WebAPI.Setup
             services.RegisterCityCommands();
             services.RegisterAdopetTutorCommands();
             services.RegisterNotificationsHandlers();
+        }
+
+        public static void RegisterAuthenticationServices(this IServiceCollection services)
+        {
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = false,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("akldaklds#45lsadjdsa%67ajkdsakjdsajkasdksakdsajlaskhldakhskajhda"))
+                };
+            });
+            services.AddScoped<IUserServices, UserServices>();
         }
 
         private static void RegisterRepositories(this IServiceCollection services)
@@ -47,40 +69,38 @@ namespace AluraChallenge.Adopet.WebAPI.Setup
 
         private static void RegisterCityCommands(this IServiceCollection services)
         {
-            services.AddScoped<IRequestHandler<CreateCityCommandRequest, CityResponse>, CityCommandHandler>();
-            services.AddScoped<IRequestHandler<DeleteCityCommandRequest, bool>, CityCommandHandler>();
+            services.AddScoped<IRequestHandler<CreateCityCommandRequest, ApplicationResponse<CityResponse>>, CityCommandHandler>();
+            services.AddScoped<IRequestHandler<DeleteCityCommandRequest, ApplicationResponse<bool>>, CityCommandHandler>();
         }
 
         private static void RegisterTutorCommands(this IServiceCollection services)
         {
-            services.AddScoped<IRequestHandler<CreateTutorCommandRequest, TutorResponse>, TutorCommandHandler>();
-            services.AddScoped<IRequestHandler<ChangeTutorPropertiesCommandRequest, TutorResponse>, TutorCommandHandler>();
-            services.AddScoped<IRequestHandler<ChangeTutorAboutCommandRequest, TutorResponse>, TutorCommandHandler>();
-            services.AddScoped<IRequestHandler<ChangeTutorAddressCommandRequest, TutorResponse>, TutorCommandHandler>();
-            services.AddScoped<IRequestHandler<ChangeTutorNameCommandRequest, TutorResponse>, TutorCommandHandler>();
-            services.AddScoped<IRequestHandler<ChangeTutorPhoneCommandRequest, TutorResponse>, TutorCommandHandler>();
-            services.AddScoped<IRequestHandler<ChangeTutorUrlImageCommandRequest, TutorResponse>, TutorCommandHandler>();
-            services.AddScoped<IRequestHandler<ChangeTutorPasswordCommandRequest, bool>, TutorCommandHandler>();
-            services.AddScoped<IRequestHandler<DeleteTutorCommandRequest, bool>, TutorCommandHandler>();
+            services.AddScoped<IRequestHandler<CreateTutorCommandRequest, ApplicationResponse<TutorResponse>>, TutorCommandHandler>();
+            services.AddScoped<IRequestHandler<ChangeTutorPropertiesCommandRequest, ApplicationResponse<TutorResponse>>, TutorCommandHandler>();
+            services.AddScoped<IRequestHandler<ChangeTutorAboutCommandRequest, ApplicationResponse<TutorResponse>>, TutorCommandHandler>();
+            services.AddScoped<IRequestHandler<ChangeTutorAddressCommandRequest, ApplicationResponse<TutorResponse>>, TutorCommandHandler>();
+            services.AddScoped<IRequestHandler<ChangeTutorNameCommandRequest, ApplicationResponse<TutorResponse>>, TutorCommandHandler>();
+            services.AddScoped<IRequestHandler<ChangeTutorPhoneCommandRequest, ApplicationResponse<TutorResponse>>, TutorCommandHandler>();
+            services.AddScoped<IRequestHandler<ChangeTutorUrlImageCommandRequest, ApplicationResponse<TutorResponse>>, TutorCommandHandler>();
+            services.AddScoped<IRequestHandler<DeleteTutorCommandRequest, ApplicationResponse<bool>>, TutorCommandHandler>();
         }
 
         private static void RegisterShelterCommands(this IServiceCollection services)
         {
-            services.AddScoped<IRequestHandler<CreateShelterCommandRequest, ShelterResponse>, ShelterCommandHandler>();
-            services.AddScoped<IRequestHandler<ChangeShelterPropertiesCommandRequest, ShelterResponse>, ShelterCommandHandler>();
-            services.AddScoped<IRequestHandler<ChangeShelterAddressCommandRequest, ShelterResponse>, ShelterCommandHandler>();
-            services.AddScoped<IRequestHandler<ChangeShelterNameCommandRequest, ShelterResponse>, ShelterCommandHandler>();
-            services.AddScoped<IRequestHandler<ChangeShelterPhoneCommandRequest, ShelterResponse>, ShelterCommandHandler>();
-            services.AddScoped<IRequestHandler<ChangeShelterUrlImageCommandRequest, ShelterResponse>, ShelterCommandHandler>();
-            //services.AddScoped<IRequestHandler<ChangeShelterPasswordCommandRequest, bool>, TutorCommandHandler>();
-            services.AddScoped<IRequestHandler<DeleteShelterCommandRequest, bool>, ShelterCommandHandler>();
-            services.AddScoped<IRequestHandler<AddPetCommandRequest, PetResponse>, ShelterCommandHandler>();
+            services.AddScoped<IRequestHandler<CreateShelterCommandRequest, ApplicationResponse<ShelterResponse>>, ShelterCommandHandler>();
+            services.AddScoped<IRequestHandler<ChangeShelterPropertiesCommandRequest, ApplicationResponse<ShelterResponse>>, ShelterCommandHandler>();
+            services.AddScoped<IRequestHandler<ChangeShelterAddressCommandRequest, ApplicationResponse<ShelterResponse>>, ShelterCommandHandler>();
+            services.AddScoped<IRequestHandler<ChangeShelterNameCommandRequest, ApplicationResponse<ShelterResponse>>, ShelterCommandHandler>();
+            services.AddScoped<IRequestHandler<ChangeShelterPhoneCommandRequest, ApplicationResponse<ShelterResponse>>, ShelterCommandHandler>();
+            services.AddScoped<IRequestHandler<ChangeShelterUrlImageCommandRequest, ApplicationResponse<ShelterResponse>>, ShelterCommandHandler>();
+            services.AddScoped<IRequestHandler<DeleteShelterCommandRequest, ApplicationResponse<bool>>, ShelterCommandHandler>();
+            services.AddScoped<IRequestHandler<AddPetCommandRequest, ApplicationResponse<PetResponse>>, ShelterCommandHandler>();
         }
 
         private static void RegisterAdopetTutorCommands(this IServiceCollection services)
         {
-            services.AddScoped<IRequestHandler<AdopetPetCommandRequest, AdopetResponse>, AdopetCommandHandler>();
-            services.AddScoped<IRequestHandler<DeleteAdopetCommandRequest, bool>, AdopetCommandHandler>();
+            services.AddScoped<IRequestHandler<AdopetPetCommandRequest, ApplicationResponse<AdopetResponse>>, AdopetCommandHandler>();
+            services.AddScoped<IRequestHandler<DeleteAdopetCommandRequest, ApplicationResponse<bool>>, AdopetCommandHandler>();
         }
 
         private static void RegisterNotificationsHandlers(this IServiceCollection services)

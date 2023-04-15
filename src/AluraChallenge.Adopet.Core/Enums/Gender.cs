@@ -1,4 +1,4 @@
-﻿namespace AluraChallenge.Adopet.Domain.Enums
+﻿namespace AluraChallenge.Adopet.Core
 {
     public enum Gender
     {

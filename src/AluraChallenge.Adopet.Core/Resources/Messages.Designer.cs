@@ -22,7 +22,7 @@ namespace AluraChallenge.Adopet.Core.Resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Messages {
+    public class Messages {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace AluraChallenge.Adopet.Core.Resources {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("AluraChallenge.Adopet.Core.Resources.Messages", typeof(Messages).Assembly);
@@ -51,7 +51,7 @@ namespace AluraChallenge.Adopet.Core.Resources {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -61,27 +61,108 @@ namespace AluraChallenge.Adopet.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to É necessário informar o comportamento do Pet.
+        /// </summary>
+        public static string EmptyBehaviorException {
+            get {
+                return ResourceManager.GetString("EmptyBehaviorException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to É necessário informar o Id.
+        /// </summary>
+        public static string EmptyEntityIdException {
+            get {
+                return ResourceManager.GetString("EmptyEntityIdException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to É necessário informar o gênero do Pet.
+        /// </summary>
+        public static string EmptyGenderException {
+            get {
+                return ResourceManager.GetString("EmptyGenderException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to É necessário informar seu nome.
         /// </summary>
-        internal static string EmptyNameException {
+        public static string EmptyNameException {
             get {
                 return ResourceManager.GetString("EmptyNameException", resourceCulture);
             }
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to É necessário informar a idade do Pet.
+        /// </summary>
+        public static string EmptyPetAgeException {
+            get {
+                return ResourceManager.GetString("EmptyPetAgeException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to É necessário informar o identificador do abrigo.
+        /// </summary>
+        public static string EmptyShelterIdException {
+            get {
+                return ResourceManager.GetString("EmptyShelterIdException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to É necessário informar o tamanho do Pet.
+        /// </summary>
+        public static string EmptySizeException {
+            get {
+                return ResourceManager.GetString("EmptySizeException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to É necessário informar a espécie do Pet.
+        /// </summary>
+        public static string EmptySpecimenException {
+            get {
+                return ResourceManager.GetString("EmptySpecimenException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to É necessário informar um UF.
+        /// </summary>
+        public static string EmptyUFException {
+            get {
+                return ResourceManager.GetString("EmptyUFException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Objeto não encontrado.
         /// </summary>
-        internal static string EntityNotFoundException {
+        public static string EntityNotFoundException {
             get {
                 return ResourceManager.GetString("EntityNotFoundException", resourceCulture);
             }
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to E-mail já cadastrado.
+        /// </summary>
+        public static string ExistsEmailException {
+            get {
+                return ResourceManager.GetString("ExistsEmailException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to As senhas não batem.
         /// </summary>
-        internal static string InvalidConfirmationPasswordException {
+        public static string InvalidConfirmationPasswordException {
             get {
                 return ResourceManager.GetString("InvalidConfirmationPasswordException", resourceCulture);
             }
@@ -90,7 +171,7 @@ namespace AluraChallenge.Adopet.Core.Resources {
         /// <summary>
         ///   Looks up a localized string similar to É necessário informar um e-mail válido.
         /// </summary>
-        internal static string InvalidEmailException {
+        public static string InvalidEmailException {
             get {
                 return ResourceManager.GetString("InvalidEmailException", resourceCulture);
             }
@@ -99,7 +180,7 @@ namespace AluraChallenge.Adopet.Core.Resources {
         /// <summary>
         ///   Looks up a localized string similar to A senha deve conter pelo menos uma letra maiúscula, um número e ter entre 6 e 15 caracteres.
         /// </summary>
-        internal static string InvalidPasswordException {
+        public static string InvalidPasswordException {
             get {
                 return ResourceManager.GetString("InvalidPasswordException", resourceCulture);
             }

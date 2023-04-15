@@ -4,6 +4,6 @@ namespace AluraChallenge.Adopet.Core.Exceptions
 {
     public class InvalidPasswordException : Exception
     {
-        public InvalidPasswordException() : base(Messages.EmptyNameException) { }
+        public InvalidPasswordException() : base(Messages.InvalidPasswordException) { }
     }
 }

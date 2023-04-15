@@ -1,6 +1,6 @@
 ﻿using AluraChallenge.Adopet.Domain.Abstraction;
 using AluraChallenge.Adopet.Domain.DomainEvents;
-using AluraChallenge.Adopet.Domain.Enums;
+using AluraChallenge.Adopet.Core;
 
 namespace AluraChallenge.Adopet.Domain
 {
@@ -13,19 +13,17 @@ namespace AluraChallenge.Adopet.Domain
         private Shelter(string name,
                         string email,
                         string phone,
-                        string password,
-                        string confirmaPassword) : base(name, email, phone, password, confirmaPassword, ProfileRole.Shelter) 
+                        Guid userId) : base(name, email, phone, userId) 
         {
             AddDomainEvent(new CreateEntityDomainEvent<Shelter>(this));
         }
 
         public static Shelter Create(string name,
                         string email,
-                        string phone,
-                        string password,
-                        string confirmaPassword)
+                        Guid userId,
+                        string phone = "")
         {
-            return new Shelter(name, email, phone, password, confirmaPassword);
+            return new Shelter(name, email, phone, userId);
         }
 
         public Pet AddPet(string? name,

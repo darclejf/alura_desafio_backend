@@ -27,7 +27,7 @@ namespace AluraChallenge.Adopet.WebAPI.Middlewares
 
         private static Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            var exceptionResult = JsonSerializer.Serialize(new ErrorResponse(exception.Message, exception.StackTrace));
+            var exceptionResult = JsonSerializer.Serialize(new ErrorResponse { Messages = new List<string> { exception.Message } });
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)exception.GetHttpStatusCode();
             return context.Response.WriteAsync(exceptionResult);

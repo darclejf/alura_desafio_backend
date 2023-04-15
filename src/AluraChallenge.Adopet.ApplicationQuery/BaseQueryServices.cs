@@ -1,5 +1,5 @@
-﻿using AluraChallenge.Adopet.Core.Exceptions;
-using AluraChallenge.Adopet.Core.Models;
+﻿using AluraChallenge.Adopet.ApplicationQuery.Response;
+using AluraChallenge.Adopet.Core.Exceptions;
 using AluraChallenge.Adopet.Data;
 using AluraChallenge.Adopet.Domain.Abstraction;
 using AutoMapper;
@@ -9,8 +9,6 @@ namespace AluraChallenge.Adopet.ApplicationQuery
 {
     public abstract class BaseQueryServices<T, R, X> : IDisposable 
                                                         where T : Entity 
-                                                        where R : BaseEntityResponse
-                                                        where X : BaseEntityResponse
     {
         protected readonly DbSet<T> _dbSet;
         protected readonly AdopetDbContext _context;

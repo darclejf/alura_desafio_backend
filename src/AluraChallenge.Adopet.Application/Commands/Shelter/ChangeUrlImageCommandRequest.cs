@@ -1,10 +1,10 @@
 ﻿using AluraChallenge.Adopet.Application.Request;
-using AluraChallenge.Adopet.Core.Models;
+using AluraChallenge.Adopet.Application.Response;
 using MediatR;
 
 namespace AluraChallenge.Adopet.Application.Commands
 {
-    public class ChangeShelterUrlImageCommandRequest : IRequest<ShelterResponse>
+    public class ChangeShelterUrlImageCommandRequest : IRequest<ApplicationResponse<ShelterResponse>>
     {
         public Guid Id { get; set; }
         public UrlImageRequest Request { get; set; }

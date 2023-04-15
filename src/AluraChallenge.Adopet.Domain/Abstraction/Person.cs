@@ -1,7 +1,6 @@
 ﻿using AluraChallenge.Adopet.Core.Exceptions;
 using AluraChallenge.Adopet.Core.ValueObjects;
 using AluraChallenge.Adopet.Domain.DomainEvents;
-using AluraChallenge.Adopet.Domain.Enums;
 
 namespace AluraChallenge.Adopet.Domain.Abstraction
 {
@@ -12,7 +11,6 @@ namespace AluraChallenge.Adopet.Domain.Abstraction
         public Guid? CityId { get; protected set; }
         public City? City { get; protected set; }
         public Guid UserId { get; protected set; }
-        public User User { get; protected set; }
         public Email Email { get; protected set; }
         public string? Phone { get; protected set; }
         public string? UrlImage { get; private set; }
@@ -22,15 +20,11 @@ namespace AluraChallenge.Adopet.Domain.Abstraction
         protected Person(string name, 
                         string email, 
                         string phone,
-                        string password, 
-                        string confirmaPassword, 
-                        ProfileRole role,
+                        Guid userId,
                         string urlImage = null)
         {
             var emailValueObject = new Email(email);
-            var user = User.Create(emailValueObject.Address, password, confirmaPassword, role);
-            User = user;
-            UserId = user.Id;
+            UserId = userId;
             Email = emailValueObject;
 
             ChangeName(name);
@@ -47,7 +41,6 @@ namespace AluraChallenge.Adopet.Domain.Abstraction
         {
             if (string.IsNullOrEmpty(name))
                 throw new EmptyNameException();
-
             Name = name;
         }
 

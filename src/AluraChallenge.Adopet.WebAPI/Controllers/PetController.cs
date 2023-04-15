@@ -1,8 +1,12 @@
 ﻿using AluraChallenge.Adopet.Application.Commands;
 using AluraChallenge.Adopet.Application.Request;
+using AluraChallenge.Adopet.Application.Response;
 using AluraChallenge.Adopet.ApplicationQuery;
+using AluraChallenge.Adopet.ApplicationQuery.Response;
 using AluraChallenge.Adopet.Core.Models;
+using AluraChallenge.Adopet.Domain.Enums;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AluraChallenge.Adopet.WebAPI.Controllers
@@ -21,6 +25,7 @@ namespace AluraChallenge.Adopet.WebAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize(AuthenticationSchemes="Bearer", Roles=ProfileRole.Shelter)]
         [Produces("application/json")]
         [Consumes("application/json")]
         [ProducesResponseType(typeof(PetResponse), StatusCodes.Status200OK)]
@@ -33,6 +38,7 @@ namespace AluraChallenge.Adopet.WebAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(AuthenticationSchemes="Bearer", Roles=ProfileRole.Shelter)]
         [Produces("application/json")]
         [Consumes("application/json")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
